@@ -1,0 +1,119 @@
+{
+  "generatedAt": "2026-10-30",
+  "generator": "OpenAI built-in image generation tool",
+  "model": "Exact model identifier was not exposed by the tool",
+  "referenceImages": false,
+  "format": "WebP",
+  "resize": {
+    "filter": "Lanczos",
+    "quality": 90
+  },
+  "prompts": "README.md",
+  "avatars": [
+    {
+      "file": "man-coffee-256.webp",
+      "gender": "male",
+      "width": 256,
+      "height": 256,
+      "sha256": "25a32d8e3cd1afd0135119027fb6c4a66863e104f90abf88b065804d08483ff6"
+    },
+    {
+      "file": "man-courtyard-256.webp",
+      "gender": "male",
+      "width": 256,
+      "height": 256,
+      "sha256": "0be7a43c3961b37b09633af35896a83c9718a86fd30f83f3a26a11c94037390a"
+    },
+    {
+      "file": "man-hiking-256.webp",
+      "gender": "male",
+      "width": 256,
+      "height": 256,
+      "sha256": "e55b59072e8d8be7afa2ee759091fcfbd3fc51d042f4f80176b982e58885de43"
+    },
+    {
+      "file": "man-library-256.webp",
+      "gender": "male",
+      "width": 256,
+      "height": 256,
+      "sha256": "fd84c9e8a3dfa42dd9265b782f19a818fc921dff6a6bcc00f049301a984c8312"
+    },
+    {
+      "file": "man-park-256.webp",
+      "gender": "male",
+      "width": 256,
+      "height": 256,
+      "sha256": "fe58b962d0b972361fceb0dd7af6f9bb1b0b6dc4cf59b65b7ef8b0ce28dbcc55"
+    },
+    {
+      "file": "man-seaside-256.webp",
+      "gender": "male",
+      "width": 256,
+      "height": 256,
+      "sha256": "25fcd51e15770a263f1bc36ce7a2e2997e70e620412b4e2706ec8fcf8b63a586"
+    },
+    {
+      "file": "man-workshop-256.webp",
+      "gender": "male",
+      "width": 256,
+      "height": 256,
+      "sha256": "322405705f26a88bda5be16cb90de5f96134786cf66078a8f00f2fd4baae7546"
+    },
+    {
+      "file": "woman-balcony-256.webp",
+      "gender": "female",
+      "width": 256,
+      "height": 256,
+      "sha256": "fd44f65a8e7108c3baa328e1b3e07d7ac0b42faa7c2fbcbf0d10aaf686f3e611"
+    },
+    {
+      "file": "woman-cafe-256.webp",
+      "gender": "female",
+      "width": 256,
+      "height": 256,
+      "sha256": "f7373ebc861b324f873315a570a3d3d65517318e5f86c1f5e8ca2a7b42a07a7a"
+    },
+    {
+      "file": "woman-city-256.webp",
+      "gender": "female",
+      "width": 256,
+      "height": 256,
+      "sha256": "01f51b3826a821aea2691163e8e9f311ccafb79c090ce8c0eb9811230ac6a03f"
+    },
+    {
+      "file": "woman-garden-256.webp",
+      "gender": "female",
+      "width": 256,
+      "height": 256,
+      "sha256": "90c66f13b7275241c9342129be18742ffafc721206098f80bbfa1a9990a5a9ed"
+    },
+    {
+      "file": "woman-kitchen-256.webp",
+      "gender": "female",
+      "width": 256,
+      "height": 256,
+      "sha256": "1ddce5e4bde6cea77b2f53889ac7bc4ef914752da14716d6847f3e80673b7db8"
+    },
+    {
+      "file": "woman-lakeside-256.webp",
+      "gender": "female",
+      "width": 256,
+      "height": 256,
+      "sha256": "5ff2290147cbfc0245ee4f4440e0439db2a5cd87b95a155bf7f04b0a4e404496"
+    },
+    {
+      "file": "woman-train-256.webp",
+      "gender": "female",
+      "width": 256,
+      "height": 256,
+      "sha256": "c16544c317c7c933b6a1d7eec8d6e7bb02329857814bb318ba77a781ed786e9d"
+    },
+    {
+      "file": "woman-window-256.webp",
+      "gender": "female",
+      "width": 256,
+      "height": 256,
+      "sha256": "d112f8b433aff224c680ac7b9672738991538be64530a11b76f51aca7171800e"
+    }
+  ]
+}
