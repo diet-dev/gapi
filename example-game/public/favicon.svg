@@ -1,0 +1,7 @@
+<!-- Начальная иконка до загрузки скрипта, который отображает текущую позицию игры. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#f4f4f4"/>
+  <path d="M 22 2 V 62 M 42 2 V 62 M 2 22 H 62 M 2 42 H 62" stroke="#3b3b3b" stroke-width="1" stroke-linecap="round" fill="none"/>
+  <path d="M 6.4 6.4 L 17.6 17.6 M 17.6 6.4 L 6.4 17.6" stroke="#1565c0" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <circle cx="32" cy="32" r="6" stroke="#c62828" stroke-width="1.8" fill="none"/>
+</svg>
