@@ -1,0 +1,80 @@
+{
+  "name": "@dietdev/gapi",
+  "version": "0.1.0",
+  "description": "",
+  "keywords": [
+    "typescript"
+  ],
+  "author": "dietdev <dietdev.tech@gmail.com>",
+  "type": "module",
+  "exports": {
+    "./vk": {
+      "types": "./dist/vk.d.ts",
+      "default": "./dist/vk.js"
+    },
+    "./fake/bridge": {
+      "types": "./dist/fake-bridge.d.ts",
+      "default": "./dist/fake-bridge.js"
+    },
+    "./yandex": {
+      "types": "./dist/yandex.d.ts",
+      "default": "./dist/yandex.js"
+    },
+    "./fake/ysdk": {
+      "types": "./dist/fake-ysdk.d.ts",
+      "default": "./dist/fake-ysdk.js"
+    },
+    "./emulator": {
+      "types": "./dist/emulator/index.d.ts",
+      "default": "./dist/emulator/index.js"
+    },
+    "./emulator/platform.js": {
+      "types": "./dist/emulator/platform.d.ts",
+      "default": "./dist/emulator/platform.js"
+    },
+    "./backend": {
+      "types": "./dist/backend.d.ts",
+      "default": "./dist/backend.js"
+    },
+    "./fake/score": {
+      "types": "./dist/fake-score.d.ts",
+      "default": "./dist/fake-score.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "node --disable-warning=ExperimentalWarning --test \"test/*.test.ts\"",
+    "test:watch": "node --disable-warning=ExperimentalWarning --test --watch \"test/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && cp src/emulator/platform.css dist/emulator/platform.css",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepublishOnly": "pnpm run lint && pnpm run format:check && pnpm run typecheck && pnpm test && pnpm run build",
+    "avatars:build": "node scripts/build-avatar-photos.mjs",
+    "lint": "eslint src test example-game/src --max-warnings=0",
+    "lint:fix": "eslint src test example-game/src --fix"
+  },
+  "dependencies": {
+    "@dietdev/emitter": "0.1.0",
+    "@dietdev/logger": "0.1.0",
+    "@types/node": "^24.0.0",
+    "@types/ysdk": "^1.2.0",
+    "@vkontakte/vk-bridge": "^3.0.2",
+    "prettier": "^3.9.6",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "eslint": "^9.37.0",
+    "gts": "^7.0.0"
+  },
+  "packageManager": "pnpm@9.15.1"
+}
