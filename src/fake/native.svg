@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="0 0 250 250">
+  <rect width="250" height="250" fill="#b5ddeb"/>
+  <circle cx="201" cy="42" r="20" fill="#ffdc86"/>
+  <path d="M26 63a13 13 0 0 1 13-13 22 22 0 0 1 43 0 13 13 0 0 1 0 26H39a13 13 0 0 1-13-13Z" fill="#fff5df"/>
+  <path d="M0 195Q60 163 125 195T250 190V250H0Z" fill="#a7c68d"/>
+  <path d="M0 220Q80 180 155 220T250 213V250H0Z" fill="#7fa466"/>
+  <g fill="#244d60" font-family="sans-serif" font-weight="700" font-size="29" text-anchor="middle">
+    <text x="125" y="119">Нативная</text>
+    <text x="125" y="156">реклама</text>
+  </g>
+</svg>

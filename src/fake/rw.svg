@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="470" height="357" viewBox="0 0 470 357">
+  <rect width="470" height="357" rx="16" fill="#b5ddeb"/>
+  <circle cx="383" cy="58" r="38" fill="#ffdc86" opacity=".45">
+    <animate attributeName="r" values="36;46;36" dur="1.2s" repeatCount="indefinite"/>
+  </circle>
+  <g stroke="#e7b653" stroke-width="4" stroke-linecap="round">
+    <path d="M383 10v8m0 80v8m-48-48h8m80 0h8m-82-34 6 6m56 56 6 6m-68 0 6-6m56-56 6-6"/>
+    <animateTransform attributeName="transform" type="rotate" from="0 383 58" to="360 383 58" dur="3s" repeatCount="indefinite"/>
+  </g>
+  <circle cx="383" cy="58" r="30" fill="#ffdc86"/>
+  <g fill="#fff5df">
+    <path d="M40 74a18 18 0 0 1 18-18 30 30 0 0 1 59 0 18 18 0 0 1 0 36H58a18 18 0 0 1-18-18Z"/>
+    <animateTransform attributeName="transform" type="translate" values="0 0;50 0;0 0" dur="2s" repeatCount="indefinite"/>
+  </g>
+  <path d="M0 284Q100 224 235 280T470 267V357H0Z" fill="#a7c68d"/>
+  <path d="M0 323Q135 264 290 318T470 307V357H0Z" fill="#7fa466"/>
+  <g fill="#244d60" font-family="sans-serif" font-weight="700" font-size="45" text-anchor="middle">
+    <text x="235" y="190">Rewarded video</text>
+  </g>
+</svg>

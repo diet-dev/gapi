@@ -55,7 +55,7 @@
     "test": "node --disable-warning=ExperimentalWarning --test \"test/*.test.ts\"",
     "test:watch": "node --disable-warning=ExperimentalWarning --test --watch \"test/*.test.ts\"",
     "typecheck": "tsc --noEmit",
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && cp src/emulator/platform.css dist/emulator/platform.css",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && cp src/emulator/platform.css dist/emulator/platform.css && cp src/fake/*.svg dist/fake/",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepublishOnly": "pnpm run lint && pnpm run format:check && pnpm run typecheck && pnpm test && pnpm run build",
