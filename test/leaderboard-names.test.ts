@@ -2,6 +2,63 @@ import assert from "node:assert/strict";
 import {test} from "node:test";
 import {YgScore} from "../src/score/YgScore.ts";
 import {FakeScore} from "../src/fake-score.ts";
+import {YandexGameApi} from "../src/yandex.ts";
+import {browserGlobals} from "./helpers/browser.ts";
+
+test("публичный API Яндекса преобразует рейтинг SDK и сообщает об ошибке загрузки", async context => {
+  const browser = browserGlobals(globalThis);
+  const previous = browser.window;
+  context.after(() => {
+    if (previous === undefined) Reflect.deleteProperty(globalThis, "window");
+    else browser.window = previous;
+  });
+  const calls: unknown[][] = [];
+  const sizes: string[] = [];
+  let failed = false;
+  browser.window = {
+    "fake-ysdk": {
+      leaderboards: {
+        getEntries: async (name: string, options: unknown) => {
+          calls.push([name, options]);
+          if (failed) throw new Error("SDK unavailable");
+          return {
+            userRank: 42,
+            entries: [
+              {
+                rank: 42,
+                score: 1234,
+                player: {
+                  publicName: "Player",
+                  getAvatarSrcSet: (size: string) => {
+                    sizes.push(size);
+                    return "avatar.png 1x";
+                  },
+                  scopePermissions: {avatar: "allow", public_name: "allow"},
+                },
+              },
+            ],
+          };
+        },
+      },
+    },
+  };
+  const api = new YandexGameApi({fake: true});
+  const errors: string[] = [];
+  api.score.on("error", error => errors.push(error.code));
+  const options = {quantityTop: 15, includeUser: true, quantityAround: 5};
+  assert.deepEqual(await api.score.laeders("weekly", options), {
+    userRank: 42,
+    entries: [{rank: 42, score: 1234, name: "Player", avatar: "avatar.png 1x", authorized: true}],
+  });
+  assert.deepEqual(sizes, ["medium"]);
+  failed = true;
+  assert.equal(await api.score.laeders("weekly", options), undefined);
+  assert.deepEqual(calls, [
+    ["weekly", options],
+    ["weekly", options],
+  ]);
+  assert.deepEqual(errors, ["LOAD_LEADERBOARD_ERROR"]);
+});
 
 test("Яндекс передаёт имя таблицы во всех операциях и параметры выборки", async () => {
   const api = new YgScore({fake: true});
