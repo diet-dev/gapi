@@ -8,6 +8,10 @@
   "author": "dietdev <dietdev.tech@gmail.com>",
   "type": "module",
   "exports": {
+    "./interfaces": {
+      "types": "./dist/interfaces.d.ts",
+      "default": "./dist/interfaces.js"
+    },
     "./vk": {
       "types": "./dist/vk.d.ts",
       "default": "./dist/vk.js"
