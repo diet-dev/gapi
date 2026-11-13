@@ -1,7 +1,7 @@
 {
   "name": "@dietdev/gapi",
   "version": "0.1.0",
-  "description": "",
+  "description": "TypeScript-обёртка над VK Bridge и Yandex Games SDK с эмулятором для локальной разработки.",
   "keywords": [
     "typescript"
   ],
@@ -44,7 +44,11 @@
   "files": [
     "dist"
   ],
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/emulator/platform.js",
+    "./dist/fake-ysdk.js",
+    "**/*.css"
+  ],
   "engines": {
     "node": ">=18"
   },
@@ -68,13 +72,21 @@
     "@dietdev/logger": "0.1.0",
     "@types/node": "^24.0.0",
     "@types/ysdk": "^1.2.0",
-    "@vkontakte/vk-bridge": "^3.0.2",
-    "prettier": "^3.9.6",
-    "typescript": "^5.9.3"
+    "@vkontakte/vk-bridge": "^3.0.2"
   },
   "devDependencies": {
     "eslint": "^9.37.0",
-    "gts": "^7.0.0"
+    "gts": "^7.0.0",
+    "prettier": "^3.9.6",
+    "typescript": "^5.9.3"
   },
-  "packageManager": "pnpm@9.15.1"
+  "packageManager": "pnpm@9.15.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diet-dev/gapi.git"
+  },
+  "homepage": "https://github.com/diet-dev/gapi#readme",
+  "bugs": {
+    "url": "https://github.com/diet-dev/gapi/issues"
+  }
 }

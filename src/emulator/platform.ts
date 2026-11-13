@@ -101,11 +101,8 @@ export const init = (props: Props) => {
           addClass("banner-" + (props.yandex?.banner?.landscape || "right"));
         }
       }
-    } else if (platformId === "vk") {
-      if (deviceType === "desktop") {
-      } else {
-        addClass("banner-" + (showProps?.banner_location || "top"));
-      }
+    } else if (platformId === "vk" && deviceType !== "desktop") {
+      addClass("banner-" + (showProps?.banner_location || "top"));
     }
   };
 
