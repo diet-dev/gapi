@@ -1,5 +1,6 @@
-import {type Ads, type AdsEvents} from "../interfaces.ts";
+import {type Ads, type AdsEvents, type AdShowResult} from "../interfaces.ts";
 import {VkApi} from "../api/VkApi.ts";
+import type {ErrorData} from "@vkontakte/vk-bridge";
 
 type Props = {fake: boolean};
 
@@ -27,17 +28,26 @@ export class VkAds extends VkApi<AdsEvents> implements Ads {
     method: ShowMethod,
     props: AdProps,
     events: {show: "show:native" | "show:rewarded"; hide: "hide:native" | "hide:rewarded"},
-  ): Promise<boolean> {
+  ): Promise<AdShowResult> {
     this.emit(events.show, {});
 
     try {
       const data = await this.bridgeSend(method, props);
       this.emit(events.hide, {});
-      return !!(data && data.result);
-    } catch {
+      return data?.result ? "success" : "error";
+    } catch (error: unknown) {
       this.emit(events.hide, {});
-      this.emit("error", {code: "SHOW_AD_ERROR"});
-      return false;
+      const failure = error as Partial<ErrorData> | null;
+      if (
+        props.ad_format === "reward" &&
+        failure?.error_type === "client_error" &&
+        failure.error_data?.error_code === 4
+      ) {
+        return "cancelled";
+      }
+      const reason = failure?.error_type === "client_error" ? failure.error_data?.error_reason : String(error);
+      this.emit("error", {code: "SHOW_AD_ERROR", reason});
+      return "error";
     }
   }
 
@@ -51,11 +61,11 @@ export class VkAds extends VkApi<AdsEvents> implements Ads {
     }
   }
 
-  public async showNative(): Promise<boolean> {
+  public async showNative(): Promise<AdShowResult> {
     return this.sendShow("VKWebAppShowNativeAds", nativeProps, {show: "show:native", hide: "hide:native"});
   }
 
-  public async showRewarded(): Promise<boolean> {
+  public async showRewarded(): Promise<AdShowResult> {
     return this.sendShow("VKWebAppShowNativeAds", rewardedProps, {show: "show:rewarded", hide: "hide:rewarded"});
   }
 

@@ -105,6 +105,8 @@ api.data.on("error", ({code}) => {
 
 Большинство операций при сбое отправляют `error` и возвращают `false`, пустые данные или `undefined`. Проверяйте результат метода. `data.set()` и `score.set()` возвращают `Promise<boolean>`: `true` при успехе, `false` при ошибке; подробности ошибки передаются событием. Для `score.set()` уже сохранённый не меньший рекорд тоже означает `true`, а неподдерживаемая запись в стандартном `VkScore` — `false`.
 
+`ads.showNative()` и `ads.showRewarded()` возвращают `"success" | "cancelled" | "error"`. `"success"` подтверждает показ или награду; `"cancelled"` отмечает отмену rewarded игроком (VK: `client_error / 4`; Яндекс: закрытие без награды и ошибки). Native возвращает только `"success"` или `"error"`. События ошибок остаются для диагностики.
+
 При сбое запроса VK модуль может отправить два события: `SEND_ERROR` от базового адаптера и собственный код, например `SHOW_AD_ERROR`.
 
 Обработка ошибок пока не полностью единообразна: исключение SDK из `auth.start()` или установки подписки `game.onStop()` / `game.onPlay()` может отклонить Promise. Обрабатывайте такие вызовы через `try/catch` на стороне игры.
@@ -123,11 +125,11 @@ await api.game.onPlay(() => {
 });
 ```
 
-Показы рекламы возвращают `Promise<boolean>`. Награду выдавайте только после `true` от `showRewarded()`:
+Показы native/rewarded возвращают `Promise<AdShowResult>`. Значение `"success"` подтверждает показ или получение награды, `"cancelled"` — отмену игроком, `"error"` — сбой:
 
 ```ts
 const rewarded = await api.ads.showRewarded();
-if (rewarded) {
+if (rewarded === "success") {
   // Выдайте награду средствами своей игры.
 }
 

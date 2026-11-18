@@ -64,9 +64,11 @@ export interface Game extends EventEmitter<ApiEvents> {
 
 // Ads
 
+export type AdShowResult = "success" | "cancelled" | "error";
+
 export interface Ads extends EventEmitter<AdsEvents> {
-  showNative(): Promise<boolean>;
-  showRewarded(): Promise<boolean>;
+  showNative(): Promise<AdShowResult>;
+  showRewarded(): Promise<AdShowResult>;
   showBanner(): Promise<boolean>;
 
   checkNative(): Promise<boolean>;

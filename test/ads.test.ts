@@ -29,7 +29,7 @@ test("VkAds: при сбое bridge showNative возвращает false и э�
   const events: string[] = [];
   ads.on("error", e => events.push(e.code));
 
-  assert.equal(await ads.showNative(), false);
+  assert.deepEqual(await ads.showNative(), "error");
   assert.deepEqual(events, ["SEND_ERROR", "SHOW_AD_ERROR"]);
 });
 
@@ -81,7 +81,7 @@ test("VkAds (fake): показ и проверка рекламы успешны
   ads.on("show:native", () => events.push("show:native"));
   ads.on("hide:native", () => events.push("hide:native"));
 
-  assert.equal(await ads.showNative(), true);
+  assert.deepEqual(await ads.showNative(), "success");
   assert.equal(await ads.checkBanner(), true);
   assert.deepEqual(events, ["show:native", "hide:native"]);
 });
@@ -92,8 +92,8 @@ test("YgAds: при недоступном SDK методы возвращают
   const events: string[] = [];
   ads.on("error", e => events.push(e.code));
 
-  assert.equal(await ads.showNative(), false);
-  assert.equal(await ads.showRewarded(), false);
+  assert.deepEqual(await ads.showNative(), "error");
+  assert.deepEqual(await ads.showRewarded(), "error");
   assert.equal(await ads.showBanner(), false);
   assert.equal(await ads.checkBanner(), false);
   assert.equal(await ads.hideBanner(), false);
@@ -114,7 +114,7 @@ test("YgAds: showNative — wasShown определяет результат, с
   ads.on("show:native", () => events.push("show:native"));
   ads.on("hide:native", () => events.push("hide:native"));
 
-  assert.equal(await ads.showNative(), true);
+  assert.deepEqual(await ads.showNative(), "success");
   assert.deepEqual(events, ["show:native", "hide:native"]);
 });
 
@@ -130,7 +130,7 @@ test("YgAds: showRewarded — onRewarded даёт true даже если onClose
   };
   const ads = new YgAds({fake: true});
 
-  assert.equal(await ads.showRewarded(), true);
+  assert.deepEqual(await ads.showRewarded(), "success");
 });
 
 test("YgAds: showRewarded — без onRewarded метод ждёт окно и возвращает false", async () => {
@@ -143,7 +143,7 @@ test("YgAds: showRewarded — без onRewarded метод ждёт окно и 
   };
   const ads = new YgAds({fake: true});
 
-  assert.equal(await ads.showRewarded(), false);
+  assert.deepEqual(await ads.showRewarded(), "cancelled");
 });
 
 test("YgAds: showNative — onOffline разрешает промис с false и ошибкой (не висит)", async () => {
@@ -163,7 +163,7 @@ test("YgAds: showNative — onOffline разрешает промис с false �
     new Promise((_, reject) => setTimeout(() => reject(new Error("промис завис")), 1000)),
   ]);
 
-  assert.equal(result, false);
+  assert.deepEqual(result, "error");
   assert.deepEqual(reasons, [{code: "SHOW_AD_ERROR", reason: "offline"}]);
 });
 
@@ -209,4 +209,63 @@ test("YgAds: hideBanner и checkBanner — reject платформы не выб
   assert.equal(await ads.hideBanner(), false);
   assert.equal(await ads.checkBanner(), false);
   assert.deepEqual(events, ["HIDE_AD_ERROR", "SHOW_AD_ERROR"]);
+});
+
+for (const cancelled of [true, false]) {
+  test(`VkAds: отказ пользователя=${cancelled} отличается от технического сбоя`, async () => {
+    browser.window["fake-bridge"] = {
+      subscribe: () => {},
+      send: async () => {
+        throw {
+          error_type: "client_error",
+          error_data: {error_code: cancelled ? 4 : 20, error_reason: cancelled ? "User denied" : "No ads"},
+        };
+      },
+    };
+    const ads = new VkAds({fake: true});
+    const events: string[] = [];
+    const errors: ApiEvents["error"][] = [];
+    ads.on("show:rewarded", () => events.push("show"));
+    ads.on("hide:rewarded", () => events.push("hide"));
+    ads.on("error", error => {
+      events.push(error.code);
+      errors.push(error);
+    });
+    assert.deepEqual(await ads.showRewarded(), cancelled ? "cancelled" : "error");
+    assert.deepEqual(
+      events,
+      cancelled ? ["show", "SEND_ERROR", "hide"] : ["show", "SEND_ERROR", "hide", "SHOW_AD_ERROR"],
+    );
+    if (!cancelled) assert.deepEqual(errors.at(-1), {code: "SHOW_AD_ERROR", reason: "No ads"});
+  });
+}
+
+for (const format of ["native", "rewarded"] as const) {
+  test(`VkAds: ${format} без показа не означает отмену`, async () => {
+    browser.window["fake-bridge"] = {subscribe: () => {}, send: async () => ({result: false})};
+    const ads = new VkAds({fake: true});
+    assert.deepEqual(await (format === "native" ? ads.showNative() : ads.showRewarded()), "error");
+  });
+}
+
+test("VkAds: native не сообщает отмену даже при коде 4", async () => {
+  browser.window["fake-bridge"] = {
+    subscribe: () => {},
+    send: async () => {
+      throw {error_type: "client_error", error_data: {error_code: 4, error_reason: "User denied"}};
+    },
+  };
+  assert.deepEqual(await new VkAds({fake: true}).showNative(), "error");
+});
+
+test("YgAds: ошибка и последующее закрытие не означают отмену", async () => {
+  browser.window["fake-ysdk"] = {
+    adv: {
+      showRewardedVideo: (opts: Parameters<SDK["adv"]["showRewardedVideo"]>[0]) => {
+        opts?.callbacks?.onError?.(new Error("offline"));
+        opts?.callbacks?.onClose?.();
+      },
+    },
+  };
+  assert.deepEqual(await new YgAds({fake: true}).showRewarded(), "error");
 });

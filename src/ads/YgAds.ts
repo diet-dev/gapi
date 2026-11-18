@@ -1,4 +1,4 @@
-import {type Ads, type AdsEvents} from "../interfaces.ts";
+import {type Ads, type AdsEvents, type AdShowResult} from "../interfaces.ts";
 import {YgApi} from "../api/YgApi.ts";
 
 type Props = {fake: boolean};
@@ -20,24 +20,24 @@ export class YgAds extends YgApi<AdsEvents> implements Ads {
     return sdk;
   }
 
-  public async showNative() {
+  public async showNative(): Promise<AdShowResult> {
     const sdk = await this.requireSdk("SHOW_AD_ERROR");
-    if (!sdk) return false;
+    if (!sdk) return "error";
 
-    return new Promise<boolean>(resolve => {
+    return new Promise<AdShowResult>(resolve => {
       sdk.adv.showFullscreenAdv({
         callbacks: {
           onOpen: () => this.emit("show:native", {}),
           onClose: (wasShown: boolean) => {
             this.emit("hide:native", {});
-            resolve(wasShown);
+            resolve(wasShown ? "success" : "error");
           },
           onError: (err: unknown) => {
-            resolve(false);
+            resolve("error");
             this.emit("error", {code: "SHOW_AD_ERROR", reason: String(err)});
           },
           onOffline: () => {
-            resolve(false);
+            resolve("error");
             this.emit("error", {code: "SHOW_AD_ERROR", reason: "offline"});
           },
         },
@@ -45,23 +45,23 @@ export class YgAds extends YgApi<AdsEvents> implements Ads {
     });
   }
 
-  public async showRewarded() {
+  public async showRewarded(): Promise<AdShowResult> {
     const sdk = await this.requireSdk("SHOW_AD_ERROR");
-    if (!sdk) return false;
+    if (!sdk) return "error";
 
-    return new Promise<boolean>(resolve => {
+    return new Promise<AdShowResult>(resolve => {
       sdk.adv.showRewardedVideo({
         callbacks: {
           onOpen: () => this.emit("show:rewarded", {}),
           onClose: () => {
             this.emit("hide:rewarded", {});
-            setTimeout(() => resolve(false), REWARDED_RESOLVE_DELAY_MS);
+            setTimeout(() => resolve("cancelled"), REWARDED_RESOLVE_DELAY_MS);
           },
           onError: (err: unknown) => {
-            resolve(false);
+            resolve("error");
             this.emit("error", {code: "SHOW_AD_ERROR", reason: String(err)});
           },
-          onRewarded: () => resolve(true),
+          onRewarded: () => resolve("success"),
         },
       });
     });

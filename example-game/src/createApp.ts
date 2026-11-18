@@ -52,7 +52,7 @@ export async function createApp() {
     icon: VIDEO_AD_ICON,
     disabled: true,
     onClick: async () => {
-      if (await GAPI.ads.showRewarded()) game.undo();
+      if ((await GAPI.ads.showRewarded()) !== "cancelled") game.undo();
     },
   });
   new Button(actionsRow, {
