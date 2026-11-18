@@ -96,7 +96,7 @@ export interface Auth extends EventEmitter<ApiEvents> {
 // Data
 
 export interface Data extends EventEmitter<ApiEvents> {
-  set(key: string, value: string, flush?: boolean): Promise<void>;
+  set(key: string, value: string, flush?: boolean): Promise<boolean>;
   get(keys?: string[]): Promise<Record<string, unknown>>;
   sync<T>(storage: DataStorage<T>, items: [keyof T, SyncDataStrategy, string?][]): Promise<void>;
 }
@@ -149,7 +149,8 @@ export interface PurchasesEvents extends ApiEvents {
 // Score
 
 export interface Score extends EventEmitter<ApiEvents> {
-  set(score: number, leaderboard: string): Promise<void>;
+  /** true — рекорд сохранён или уже не меньше переданного; false — ошибка или запись не поддерживается. */
+  set(score: number, leaderboard: string): Promise<boolean>;
   get(leaderboard: string, options?: ScoreReadOptions): Promise<{score: number; rank: number}>;
   laeders(leaderboard: string, options?: LeaderboardOptions): Promise<LeaderboardData | void>;
   // profile(profile: { name: string; avatar: string }): Promise<void>;

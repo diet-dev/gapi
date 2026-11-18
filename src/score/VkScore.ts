@@ -8,8 +8,9 @@ export class VkScore extends VkApi<ApiEvents> implements Score {
     super(props);
   }
 
-  public async set(_score: number, _leaderboard: string) {
+  public async set(_score: number, _leaderboard: string): Promise<boolean> {
     // Сохранение результата в этой реализации не поддерживается.
+    return false;
   }
 
   public async get(_leaderboard: string) {

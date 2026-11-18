@@ -9,18 +9,20 @@ export class YgData extends YgApi<ApiEvents> implements Data {
     super(props);
   }
 
-  public async set(key: string, value: string, flush?: boolean): Promise<void> {
+  public async set(key: string, value: string, flush?: boolean): Promise<boolean> {
     try {
       const player = await this.getPlayer();
       if (!player) {
         this.emit("error", {code: "SET_DATA_ERROR"});
-        return;
+        return false;
       }
       // SDK обновляет переданные ключи, сохраняя остальные облачные данные.
       // flush определяет, нужно ли сразу отправить изменения на сервер.
       await player.setData({[key]: value}, flush);
+      return true;
     } catch {
       this.emit("error", {code: "SET_DATA_ERROR"});
+      return false;
     }
   }
 

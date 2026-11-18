@@ -16,8 +16,8 @@ function setup(appId = "my-game", platform: "vk" | "yg" = "vk", values = new Map
 test("локальный рекорд сохраняется между экземплярами и не уменьшается", async () => {
   const values = new Map<string, string>();
   const score = setup("my-game", "vk", values);
-  await score.set(250, "score");
-  await score.set(100, "score");
+  assert.equal(await score.set(250, "score"), true);
+  assert.equal(await score.set(100, "score"), true);
   assert.equal((await setup("my-game", "vk", values).get("score")).score, 250);
   assert.equal((await score.get("daily")).score, 0);
   assert.equal((await setup("other", "vk", values).get("score")).score, 0);
@@ -53,6 +53,6 @@ test("ошибки хранилища передаются через интер
   const errors: string[] = [];
   score.on("error", error => errors.push(error.code));
   assert.deepEqual(await score.get("score"), {score: -1, rank: -1});
-  await score.set(100, "score");
+  assert.equal(await score.set(100, "score"), false);
   assert.deepEqual(errors, ["GET_SCORE_ERROR", "SET_SCORE_ERROR"]);
 });

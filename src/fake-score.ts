@@ -21,12 +21,14 @@ export class FakeScore extends EventEmitter<ApiEvents> implements Score {
     this.leaderboard = new YgFakeLeaderboard(props.appId, props.language, props);
   }
 
-  public async set(score: number, leaderboard: string): Promise<void> {
+  public async set(score: number, leaderboard: string): Promise<boolean> {
     try {
       const current = this.readScore(leaderboard);
       this.props.storage.setItem(this.key(leaderboard), JSON.stringify(Math.max(current, score)));
+      return true;
     } catch {
       this.emit("error", {code: "SET_SCORE_ERROR"});
+      return false;
     }
   }
 

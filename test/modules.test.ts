@@ -69,7 +69,7 @@ test("Аудит VkData: при сбое bridge get возвращает {} и �
   const events = collect(cb => data.on("error", cb));
 
   assert.deepEqual(await data.get(["k"]), {});
-  await data.set("k", "v");
+  assert.equal(await data.set("k", "v"), false);
   assert.deepEqual(events, ["SEND_ERROR", "GET_DATA_ERROR", "SEND_ERROR", "SET_DATA_ERROR"]);
 });
 
@@ -109,4 +109,8 @@ test("Аудит VkShortcut: при сбое bridge check/show возвраща�
   assert.equal(await shortcut.check(), false);
   assert.equal(await shortcut.show(), false);
   assert.deepEqual(events, ["SEND_ERROR", "SHORTCUT_CHECK_ERROR", "SEND_ERROR", "SHORTCUT_SHOW_ERROR"]);
+});
+
+test("VkScore.set возвращает false для неподдерживаемой записи", async () => {
+  assert.equal(await new VkScore({fake: true}).set(100, "score"), false);
 });

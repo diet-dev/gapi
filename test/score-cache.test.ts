@@ -77,7 +77,7 @@ test("Яндекс: проверка перед записью использу�
   assert.equal(ownReads, 1);
   assert.equal(tableReads, 2);
   assert.deepEqual(queries[0], {quantityTop: 15});
-  await api.set(20, "weekly");
+  assert.equal(await api.set(20, "weekly"), true);
   assert.equal(ownReads, 1);
   assert.equal((await api.get("weekly", {maxAgeMs: 30000})).score, 20);
   assert.equal(ownReads, 2);
@@ -142,4 +142,45 @@ test("собственный API: кеш и объединение чтений,
   await api.getEntries("weekly", {maxAgeMs: 120000, includeUser: true});
   assert.equal(ownReads, 2);
   assert.equal(tableReads, 2);
+});
+
+test("Яндекс: set возвращает false при сбое и очередь продолжает следующие записи", async () => {
+  const api = new YgScore({fake: true});
+  const errors: string[] = [];
+  api.on("error", event => errors.push(event.code));
+  let reads = 0;
+  Object.defineProperty(api, "sdk", {
+    value: async () => ({
+      leaderboards: {
+        getPlayerEntry: async () => ({score: ++reads === 1 ? 0 : 100, rank: 1}),
+        setScore: async () => {
+          throw Error("offline");
+        },
+      },
+    }),
+  });
+  const failed = api.set(100, "weekly");
+  const alreadySaved = api.set(100, "monthly");
+  assert.deepEqual(await Promise.all([failed, alreadySaved]), [false, true]);
+  assert.deepEqual(errors, ["SET_SCORE_ERROR"]);
+});
+
+test("Яндекс: set возвращает false без SDK и при ошибке чтения рекорда", async () => {
+  for (const sdk of [
+    undefined,
+    {
+      leaderboards: {
+        getPlayerEntry: async () => {
+          throw Error("offline");
+        },
+      },
+    },
+  ]) {
+    const api = new YgScore({fake: true});
+    Object.defineProperty(api, "sdk", {value: async () => sdk});
+    const errors: string[] = [];
+    api.on("error", event => errors.push(event.code));
+    assert.equal(await api.set(100, "weekly"), false);
+    assert.deepEqual(errors, ["SET_SCORE_ERROR"]);
+  }
 });

@@ -20,7 +20,7 @@ export class YgScore extends YgApi<ApiEvents> implements Score {
   private readonly ownCache = createReadCache<{score: number; rank: number}>();
   private readonly tableCache = createReadCache<LeaderboardData>();
   private cacheIdentity: unknown;
-  private writes: Promise<void> = Promise.resolve();
+  private writes: Promise<boolean> = Promise.resolve(true);
   private lastWrite = -Infinity;
   private readonly writeClock = performance.now.bind(performance);
 
@@ -48,18 +48,18 @@ export class YgScore extends YgApi<ApiEvents> implements Score {
     });
   }
 
-  public set(score: number, leaderboard: string): Promise<void> {
+  public set(score: number, leaderboard: string): Promise<boolean> {
     const request = this.writes.then(() => this.write(score, leaderboard));
-    this.writes = request.catch(() => {});
+    this.writes = request.catch(() => false);
     return request;
   }
 
-  private async write(score: number, leaderboard: string): Promise<void> {
+  private async write(score: number, leaderboard: string): Promise<boolean> {
     try {
       const sdk = await this.sdk();
       if (!sdk) throw new Error("SDK unavailable");
       const entry = await this.readEntry(leaderboard, 15_000);
-      if (entry.score >= score) return;
+      if (entry.score >= score) return true;
       // Интервал между записями общий для всех таблиц этого экземпляра.
       const delay = 1100 - (this.writeClock() - this.lastWrite);
       if (delay > 0) await new Promise(resolve => setTimeout(resolve, delay));
@@ -67,8 +67,10 @@ export class YgScore extends YgApi<ApiEvents> implements Score {
       await sdk.leaderboards.setScore(leaderboard, score);
       this.ownCache.invalidate(JSON.stringify([leaderboard]));
       this.tableCache.invalidate(JSON.stringify([leaderboard]).slice(0, -1) + ",");
+      return true;
     } catch {
       this.emit("error", {code: "SET_SCORE_ERROR"});
+      return false;
     }
   }
 

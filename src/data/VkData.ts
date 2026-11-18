@@ -9,11 +9,13 @@ export class VkData extends VkApi<ApiEvents> implements Data {
     super(props);
   }
 
-  public async set(key: string, value: string): Promise<void> {
+  public async set(key: string, value: string): Promise<boolean> {
     try {
       await this.bridgeSend("VKWebAppStorageSet", {key, value});
+      return true;
     } catch {
       this.emit("error", {code: "SET_DATA_ERROR"});
+      return false;
     }
   }
 

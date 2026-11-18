@@ -32,11 +32,12 @@ class Cloud extends EventEmitter<ApiEvents> implements Data {
     this.on("error", event => this.errors.push(event.code));
   }
 
-  set(key: string, value: string): Promise<void> {
+  set(key: string, value: string): Promise<boolean> {
     const pending = new Promise<void>(resolve => setTimeout(resolve, 0));
     this.flushed.push(pending);
     return pending.then(() => {
       this.saved[key] = value;
+      return true;
     });
   }
 
@@ -248,7 +249,7 @@ test("S2: YgData.set — setData вызывается ровно с { [key]: val
   stubYsdk(player);
   const data = new YgData({fake: true});
 
-  await data.set("level", "9", true);
+  assert.equal(await data.set("level", "9", true), true);
 
   assert.deepEqual(player.lastSetArgs, [[{level: "9"}, true]]);
 });
@@ -260,7 +261,7 @@ test("S2: YgData.set — reject setData не выбрасывается нару
   const errors: string[] = [];
   data.on("error", e => errors.push(e.code));
 
-  await data.set("level", "9");
+  assert.equal(await data.set("level", "9"), false);
   assert.deepEqual(errors, ["SET_DATA_ERROR"]);
 });
 
@@ -282,7 +283,7 @@ test("S2: YgData.set/get — при недоступном SDK эмитятся 
   const errors: string[] = [];
   data.on("error", e => errors.push(e.code));
 
-  await data.set("level", "9");
+  assert.equal(await data.set("level", "9"), false);
   assert.deepEqual(await data.get(), {});
   assert.deepEqual(errors, ["SET_DATA_ERROR", "GET_DATA_ERROR"]);
 });
@@ -389,4 +390,18 @@ test("YgData сообщает об ошибке, если в fake-хранили
   data.on("error", event => errors.push(event.code));
   assert.deepEqual(await data.get(), {});
   assert.deepEqual(errors, ["GET_DATA_ERROR"]);
+});
+
+test("VkData.set возвращает true после успешной записи", async () => {
+  const calls: unknown[] = [];
+  browser.window["fake-bridge"] = {
+    send: async (method: string, props: unknown) => {
+      calls.push([method, props]);
+      return {result: true};
+    },
+    subscribe: () => {},
+    supportsAsync: async () => true,
+  };
+  assert.equal(await new VkData({fake: true}).set("level", "9"), true);
+  assert.deepEqual(calls, [["VKWebAppStorageSet", {key: "level", value: "9"}]]);
 });
