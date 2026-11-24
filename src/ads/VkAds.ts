@@ -7,7 +7,6 @@ type Props = {fake: boolean};
 const nativeProps = {ad_format: "interstitial" as const};
 const rewardedProps = {ad_format: "reward" as const};
 
-type ShowMethod = "VKWebAppShowNativeAds";
 type CheckMethod = "VKWebAppCheckNativeAds" | "VKWebAppCheckBannerAd";
 type AdProps = typeof nativeProps | typeof rewardedProps;
 
@@ -25,14 +24,14 @@ export class VkAds extends VkApi<AdsEvents> implements Ads {
   // У Bridge нет события открытия этой рекламы, поэтому show:* отправляется до запроса.
   // Парный hide:* отправляется и при ошибке, чтобы игра могла завершить ожидание рекламы.
   private async sendShow(
-    method: ShowMethod,
+    operation: "showNative" | "showRewarded",
     props: AdProps,
     events: {show: "show:native" | "show:rewarded"; hide: "hide:native" | "hide:rewarded"},
   ): Promise<AdShowResult> {
     this.emit(events.show, {});
 
     try {
-      const data = await this.bridgeSend(method, props);
+      const data = await this.bridgeSend("VKWebAppShowNativeAds", props);
       this.emit(events.hide, {});
       return data?.result ? "success" : "error";
     } catch (error: unknown) {
@@ -46,27 +45,31 @@ export class VkAds extends VkApi<AdsEvents> implements Ads {
         return "cancelled";
       }
       const reason = failure?.error_type === "client_error" ? failure.error_data?.error_reason : String(error);
-      this.emit("error", {code: "SHOW_AD_ERROR", reason});
+      this.emit("error", {code: "SHOW_AD_ERROR", operation, reason});
       return "error";
     }
   }
 
-  private async sendCheck(method: CheckMethod, props?: AdProps): Promise<boolean> {
+  private async sendCheck(
+    operation: "checkNative" | "checkRewarded" | "checkBanner",
+    method: CheckMethod,
+    props?: AdProps,
+  ): Promise<boolean> {
     try {
       const data = await this.bridgeSend(method, props);
       return !!(data && data.result);
     } catch {
-      this.emit("error", {code: "SHOW_AD_ERROR"});
+      this.emit("error", {code: "SHOW_AD_ERROR", operation});
       return false;
     }
   }
 
   public async showNative(): Promise<AdShowResult> {
-    return this.sendShow("VKWebAppShowNativeAds", nativeProps, {show: "show:native", hide: "hide:native"});
+    return this.sendShow("showNative", nativeProps, {show: "show:native", hide: "hide:native"});
   }
 
   public async showRewarded(): Promise<AdShowResult> {
-    return this.sendShow("VKWebAppShowNativeAds", rewardedProps, {show: "show:rewarded", hide: "hide:rewarded"});
+    return this.sendShow("showRewarded", rewardedProps, {show: "show:rewarded", hide: "hide:rewarded"});
   }
 
   public async showBanner(): Promise<boolean> {
@@ -77,21 +80,21 @@ export class VkAds extends VkApi<AdsEvents> implements Ads {
       }
       return !!(data && data.result);
     } catch {
-      this.emit("error", {code: "SHOW_AD_ERROR"});
+      this.emit("error", {code: "SHOW_AD_ERROR", operation: "showBanner"});
       return false;
     }
   }
 
   public checkNative(): Promise<boolean> {
-    return this.sendCheck("VKWebAppCheckNativeAds", nativeProps);
+    return this.sendCheck("checkNative", "VKWebAppCheckNativeAds", nativeProps);
   }
 
   public checkRewarded(): Promise<boolean> {
-    return this.sendCheck("VKWebAppCheckNativeAds", rewardedProps);
+    return this.sendCheck("checkRewarded", "VKWebAppCheckNativeAds", rewardedProps);
   }
 
   public checkBanner(): Promise<boolean> {
-    return this.sendCheck("VKWebAppCheckBannerAd");
+    return this.sendCheck("checkBanner", "VKWebAppCheckBannerAd");
   }
 
   public async hideBanner(): Promise<boolean> {
@@ -100,7 +103,7 @@ export class VkAds extends VkApi<AdsEvents> implements Ads {
       this.emit("hide:banner", {});
       return true;
     } catch {
-      this.emit("error", {code: "HIDE_AD_ERROR"});
+      this.emit("error", {code: "HIDE_AD_ERROR", operation: "hideBanner"});
       return false;
     }
   }

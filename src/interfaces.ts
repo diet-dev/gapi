@@ -78,7 +78,11 @@ export interface Ads extends EventEmitter<AdsEvents> {
   hideBanner(): Promise<boolean>;
 }
 
+export type AdOperation =
+  "showNative" | "showRewarded" | "showBanner" | "checkNative" | "checkRewarded" | "checkBanner" | "hideBanner";
+
 export interface AdsEvents extends ApiEvents {
+  error: ApiError & {operation?: AdOperation};
   "show:native": {};
   "hide:native": {};
   "show:rewarded": {};

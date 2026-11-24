@@ -1,5 +1,5 @@
 import type {SDK} from "ysdk";
-import type {ApiEvents} from "../src/interfaces.ts";
+import type {AdsEvents} from "../src/interfaces.ts";
 import {browserGlobals} from "./helpers/browser.ts";
 import assert from "node:assert/strict";
 import {test} from "node:test";
@@ -31,6 +31,35 @@ test("VkAds: при сбое bridge showNative возвращает false и э�
 
   assert.deepEqual(await ads.showNative(), "error");
   assert.deepEqual(events, ["SEND_ERROR", "SHOW_AD_ERROR"]);
+});
+
+test("VkAds: ошибка баннера во время rewarded указывает на showBanner", async () => {
+  let finishVideo!: (result: {result: boolean}) => void;
+  const video = new Promise<{result: boolean}>(resolve => {
+    finishVideo = resolve;
+  });
+  const calls: {method: string; props: unknown}[] = [];
+  browser.window["fake-bridge"] = {
+    subscribe: () => {},
+    send: async (method: string, props: unknown) => {
+      calls.push({method, props});
+      if (calls.length === 1) return video;
+      throw new Error("banner fail");
+    },
+  };
+  const ads = new VkAds({fake: true});
+  const errors: AdsEvents["error"][] = [];
+  ads.on("error", error => errors.push(error));
+
+  const rewarded = ads.showRewarded();
+  assert.equal(await ads.showBanner(), false);
+  finishVideo({result: true});
+  assert.equal(await rewarded, "success");
+  assert.deepEqual(calls, [
+    {method: "VKWebAppShowNativeAds", props: {ad_format: "reward"}},
+    {method: "VKWebAppShowBannerAd", props: {banner_location: "top"}},
+  ]);
+  assert.deepEqual(errors, [{code: "SEND_ERROR"}, {code: "SHOW_AD_ERROR", operation: "showBanner"}]);
 });
 
 test("VkAds: при сбое bridge check* возвращают false и эмитят SHOW_AD_ERROR", async () => {
@@ -155,7 +184,7 @@ test("YgAds: showNative — onOffline разрешает промис с false �
     },
   };
   const ads = new YgAds({fake: true});
-  const reasons: ApiEvents["error"][] = [];
+  const reasons: AdsEvents["error"][] = [];
   ads.on("error", e => reasons.push(e));
 
   const result = await Promise.race([
@@ -164,7 +193,7 @@ test("YgAds: showNative — onOffline разрешает промис с false �
   ]);
 
   assert.deepEqual(result, "error");
-  assert.deepEqual(reasons, [{code: "SHOW_AD_ERROR", reason: "offline"}]);
+  assert.deepEqual(reasons, [{code: "SHOW_AD_ERROR", operation: "showNative", reason: "offline"}]);
 });
 
 test("YgAds: showBanner — при reject платформы возвращается false с ошибкой, без throw", async () => {
@@ -174,11 +203,11 @@ test("YgAds: showBanner — при reject платформы возвращае�
     },
   };
   const ads = new YgAds({fake: true});
-  const events: ApiEvents["error"][] = [];
+  const events: AdsEvents["error"][] = [];
   ads.on("error", e => events.push(e));
 
   assert.equal(await ads.showBanner(), false);
-  assert.deepEqual(events, [{code: "SHOW_AD_ERROR", reason: "Error: banner fail"}]);
+  assert.deepEqual(events, [{code: "SHOW_AD_ERROR", operation: "showBanner", reason: "Error: banner fail"}]);
 });
 
 test("YgAds: showBanner — успех даёт true и show:banner", async () => {
@@ -224,7 +253,7 @@ for (const cancelled of [true, false]) {
     };
     const ads = new VkAds({fake: true});
     const events: string[] = [];
-    const errors: ApiEvents["error"][] = [];
+    const errors: AdsEvents["error"][] = [];
     ads.on("show:rewarded", () => events.push("show"));
     ads.on("hide:rewarded", () => events.push("hide"));
     ads.on("error", error => {
@@ -236,7 +265,8 @@ for (const cancelled of [true, false]) {
       events,
       cancelled ? ["show", "SEND_ERROR", "hide"] : ["show", "SEND_ERROR", "hide", "SHOW_AD_ERROR"],
     );
-    if (!cancelled) assert.deepEqual(errors.at(-1), {code: "SHOW_AD_ERROR", reason: "No ads"});
+    if (!cancelled)
+      assert.deepEqual(errors.at(-1), {code: "SHOW_AD_ERROR", operation: "showRewarded", reason: "No ads"});
   });
 }
 
