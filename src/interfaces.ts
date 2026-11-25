@@ -246,6 +246,7 @@ export type BackendEntriesOptions = ScoreReadOptions & {
 };
 export interface GameBackend extends EventEmitter<ApiEvents> {
   authenticate(): Promise<boolean>;
+  sendReport(type: string, payload: unknown): Promise<string | undefined>;
   getFlags(): Promise<Record<string, string> | undefined>;
   getDescription(board: string): Promise<BackendDescription | undefined>;
   setScore(board: string, score: number, extraData?: string): Promise<boolean>;

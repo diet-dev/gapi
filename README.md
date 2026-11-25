@@ -400,6 +400,7 @@ if (entries) console.table(toLeaderboardData(entries).entries);
 | Метод клиента                        | HTTP-запрос                          | Требует авторизации                                          |
 | ------------------------------------ | ------------------------------------ | ------------------------------------------------------------ |
 | `authenticate()`                     | `POST /auth/token`                   | Обменивает `{proof, profile?}` на `{accessToken, expiresAt}` |
+| `sendReport(type, payload)`          | `POST /reports`                      | Да                                                           |
 | `getFlags()`                         | `GET /flags`                         | Нет                                                          |
 | `getDescription(board)`              | `GET /leaderboards/{board}`          | Нет                                                          |
 | `setScore(board, score, extraData?)` | `PUT /leaderboards/{board}/me/score` | Да                                                           |
@@ -409,6 +410,8 @@ if (entries) console.table(toLeaderboardData(entries).entries);
 `expiresAt` — строка даты, которую понимает `Date.parse`. Защищённые операции сами получают JWT; он хранится в памяти экземпляра. Публичные чтения не запускают авторизацию. `getFlags()` ожидает объект строк; типы остальных ответов экспортируются из `/backend` и описаны в [общих интерфейсах](src/interfaces.ts).
 
 При ошибке клиент отправляет `error`: `setScore()` и `authenticate()` возвращают `false`, чтения — `undefined`. У `getPlayerEntry()` значение `null` означает отсутствие записи, а `undefined` — сбой чтения. Запись принимает неотрицательные безопасные целые числа JavaScript; пределы конкретной таблицы задаёт сервер.
+
+Метод `sendReport(type, payload)` принимает тип отчёта и JSON-значение, например `await backend.sendReport("vk_ad_error", {reason: "SDK refusal"})`. При сохранении он возвращает строку `reportId`, при ошибке отправляет событие `error` и возвращает `undefined`. После сетевого сбоя или ответа 429 клиент не повторяет отправку отчёта.
 
 Для чтений рейтингов поддерживается `maxAgeMs`, как в Яндекс-модуле. Можно передать собственный `fetch` и `timeoutMs` (по умолчанию 15 секунд).
 

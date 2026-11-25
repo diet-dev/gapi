@@ -93,6 +93,43 @@ test("missing own score differs from a failed read and a zero score", async () =
   assert.deepEqual(errors, []);
 });
 
+test("report POST uses the shared session and returns the saved report id", async () => {
+  let auths = 0;
+  const payload = {reason: "SDK refusal"};
+  const api = client(async (url, init) => {
+    if (String(url).endsWith("/auth/token")) {
+      auths++;
+      return json(session());
+    }
+    assert.equal(String(url), "https://api.example/v1/projects/test-vk/reports");
+    assert.equal(init?.method, "POST");
+    assert.equal(new Headers(init.headers).get("Authorization"), "Bearer test-token");
+    assert.deepEqual(JSON.parse(String(init.body)), {type: "vk_ad_error", payload});
+    return json({reportId: "test-id"}, 201);
+  });
+  assert.equal(await api.authenticate(), true);
+  assert.equal(await api.sendReport("vk_ad_error", payload), "test-id");
+  assert.equal(auths, 1);
+});
+
+test("report failures are emitted once without a second POST", async () => {
+  for (const code of ["RATE_LIMITED", "BACKEND_REQUEST_ERROR", "BACKEND_INVALID_RESPONSE"]) {
+    let posts = 0;
+    const api = client(async url => {
+      if (String(url).endsWith("/auth/token")) return json(session());
+      posts++;
+      if (code === "RATE_LIMITED") return json({error: {code}}, 429, {"Retry-After": "1"});
+      if (code === "BACKEND_REQUEST_ERROR") throw new Error("lost response");
+      return json({}, 201);
+    });
+    const errors: string[] = [];
+    api.on("error", e => errors.push(e.code));
+    assert.equal(await api.sendReport("diagnostic", null), undefined);
+    assert.equal(posts, 1);
+    assert.deepEqual(errors, [code]);
+  }
+});
+
 test("score uses PUT and Bearer; equal results remain successful", async () => {
   const api = client(async (url, init) => {
     if (String(url).endsWith("/auth/token")) return json(session());

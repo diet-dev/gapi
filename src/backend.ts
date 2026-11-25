@@ -81,6 +81,20 @@ export class GameApiClient extends Api<ApiEvents> implements GameBackend {
     }, false);
   }
 
+  public sendReport(type: string, payload: unknown): Promise<string | undefined> {
+    return this.perform(async () => {
+      const result = await this.request<{reportId?: unknown} | null>(
+        "/reports",
+        {method: "POST", body: JSON.stringify({type, payload})},
+        true,
+      );
+      if (typeof result?.reportId !== "string" || !result.reportId) {
+        throw new RequestError("BACKEND_INVALID_RESPONSE");
+      }
+      return result.reportId;
+    }, undefined);
+  }
+
   public getFlags(): Promise<Record<string, string> | undefined> {
     return this.perform(async () => {
       const data = await this.request<unknown>("/flags");
